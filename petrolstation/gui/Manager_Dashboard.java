@@ -229,37 +229,44 @@ public class Manager_Dashboard extends JPanel
             }
 
         private void Handle_Remove_Product()
-            {
+        {
+            try
+                {
+                    int selectedRow = dataTable.getSelectedRow();
 
-                int selectedRow = dataTable.getSelectedRow();
+                    if (selectedRow == -1)
+                        {
+                            JOptionPane.showMessageDialog(this, "Please select a product to remove.");
+                            return;
+                        }
 
-                if (selectedRow == -1)
-                    {
-                        JOptionPane.showMessageDialog(this, "Please select a product to remove.");
-                        return;
-                    }
+                    // Get ID and Name for the confirmation message
+                    int productId = Integer.parseInt(dataTable.getValueAt(selectedRow, 0).toString());
+                    String productName = dataTable.getValueAt(selectedRow, 1).toString();
 
-                // Get ID and Name for the confirmation message
-                int productId = Integer.parseInt(dataTable.getValueAt(selectedRow, 0).toString());
-                String productName = dataTable.getValueAt(selectedRow, 1).toString();
+                    // Confirm Deletion
+                    int response = JOptionPane.showConfirmDialog(this,
+                            "Are you sure you want to delete " + productName + " (ID: " + productId + ")?",
+                            "Confirm Deletion",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE);
 
-                // Confirm Deletion
-                int response = JOptionPane.showConfirmDialog(this,
-                        "Are you sure you want to delete " + productName + " (ID: " + productId + ")?",
-                        "Confirm Deletion",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.WARNING_MESSAGE);
+                    if (response == JOptionPane.YES_OPTION)
+                        {
+                            // Call the DAO
+                            Product_DAO.Remove_Product(productId);
 
-                if (response == JOptionPane.YES_OPTION)
-                    {
-                        // Call the DAO
-                        Product_DAO.Remove_Product(productId);
-
-                        // Refresh the UI
-                        Refresh_Inventory();
-                        JOptionPane.showMessageDialog(this, productName + " has been removed.");
-                    }
-            }
+                            // Refresh the UI
+                            Refresh_Inventory();
+                            JOptionPane.showMessageDialog(this, productName + " has been removed.");
+                        }
+                }
+            catch (SQLException e)
+                {
+                    JOptionPane.showMessageDialog(this, "Error: " + e.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace(pw);
+                }
+        }
 
         private void Refresh_Orders()
             {

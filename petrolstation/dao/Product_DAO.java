@@ -267,53 +267,44 @@ public class Product_DAO
 
         }
 
-        public static void Remove_Product(int Product_ID) //DELETE a product
+        public static void Remove_Product(int prodID) throws SQLException //DELETE a product
+        {
+            String url = "jdbc:mysql://localhost:3306/petrol_station_schema";
+            try (Connection conn = DriverManager.getConnection(url, "root", "110316"))
             {
-                Connection connection = null;
-                PreparedStatement pstat = null;
+                conn.setAutoCommit(false);
 
                 try
                     {
-                        connection = DriverManager.getConnection(
-                                "jdbc:mysql://localhost:3306/petrol_station_schema",
-                                "root",
-                                "110316"
-                        );
+                        String sql1 = "DELETE FROM supplier_products WHERE Product_ID = ?";
+                        String sql2 = "DELETE FROM discrepancy_reports WHERE Product_ID = ?";
+                        String sql3 = "DELETE FROM order_items WHERE Product_ID = ?";
 
-                        pstat = connection.prepareStatement("DELETE FROM products WHERE Product_ID = ?");
-                        pstat.setInt(1, Product_ID);
-
-                        int rowsDeleted = pstat.executeUpdate();
-
-                        if (rowsDeleted > 0)
+                        try (PreparedStatement ps1 = conn.prepareStatement(sql1);
+                             PreparedStatement ps2 = conn.prepareStatement(sql2);
+                             PreparedStatement ps3 = conn.prepareStatement(sql3))
                             {
-                                IO.println("Product " + Product_ID + " was successfully removed.");
+                                ps1.setInt(1, prodID); ps1.executeUpdate();
+                                ps2.setInt(1, prodID); ps2.executeUpdate();
+                                ps3.setInt(1, prodID); ps3.executeUpdate();
                             }
-                        else
+
+                        String sqlProduct = "DELETE FROM products WHERE Product_ID = ?";
+                        try (PreparedStatement psProd = conn.prepareStatement(sqlProduct))
                             {
-                                IO.println("No product was deleted");
+                                psProd.setInt(1, prodID);
+                                psProd.executeUpdate();
                             }
+
+                        conn.commit();
                     }
-
                 catch (SQLException e)
                     {
+                        conn.rollback();
                         e.printStackTrace(pw);
-                        pw.flush();
-                    }
-                finally
-                    {
-                        try
-                            {
-                                pstat.close();
-                                connection.close();
-                            }
-                        catch (Exception e)
-                            {
-                                e.printStackTrace(pw);
-                                pw.flush();
-                            }
                     }
             }
+        }
 
         public static java.util.ArrayList<String> Get_All_Supplier_Names() // Method to get all supplier names for the JComboBox
             {
